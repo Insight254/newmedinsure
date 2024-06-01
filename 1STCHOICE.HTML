@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medinsure Gallery</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f8f8;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .heading {
+      color: #032B44; /* Medinsure logo color */
+      font-size: 36px;
+      font-weight: bold;
+      margin: 0;
+    }
+    .gallery-container {
+      padding: 20px;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .column {
+      flex: 1;
+      min-width: 180px; /* Ensures a sensible minimum width for images */
+    }
+    .column img {
+      width: 100%;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .cart-button, .upload-button {
+      background-color: #032B44; /* Medinsure logo color */
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: none;
+      margin-right: 10px;
+    }
+    /* Hide the upload button and file input by default */
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="heading">Our Gallery</h1>
+    <div>
+      <button class="upload-button" id="show-upload-btn">Upload Photos</button>
+      <button class="cart-button" id="checkout-btn">Checkout</button>
+    </div>
+  </div>
+
+  <!-- Hidden file input for photo uploads -->
+  <input type="file" id="photo-upload" class="hidden" multiple>
+
+  <div class="gallery-container">
+    <h2>Charity Gala</h2>
+    <div class="row" id="image-grid">
+      <div class="column">
+        <img src="https://img1.wsimg.com/isteam/ip/d67f49f4-a6f5-47b7-8d84-7fcf225b8867/IMG-20240504-WA0073.jpg/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:370,cg:true" alt="Image 1">
+      </div>
+      <div class="column">
+        <img src="https://img1.wsimg.com/isteam/ip/d67f49f4-a6f5-47b7-8d84-7fcf225b8867/IMG-20240504-WA0073.jpg/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:370,cg:true" alt="Image 2">
+      </div>
+      <div class="column">
+        <img src="https://img1.wsimg.com/isteam/ip/d67f49f4-a6f5-47b7-8d84-7fcf225b8867/IMG-20240502-WA0028.jpg/:/rs=w:1023,h:575" alt="Image 3">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      document.addEventListener("contextmenu", function(e) {
+        e.preventDefault();
+      });
+
+      const images = [];
+      const cartButton = document.getElementById('checkout-btn');
+      const imageGrid = document.getElementById('image-grid');
+      const photoUpload = document.getElementById('photo-upload');
+      const showUploadBtn = document.getElementById('show-upload-btn');
+      
+      // Password to allow uploads
+      const UPLOAD_PASSWORD = 'Gilgal$22$';
+
+      // Check if the user is allowed to upload
+      let authorized = false;
+
+      // Add event listener to cart button
+      cartButton.addEventListener('click', function() {
+        if (images.length > 0) {
+          window.location.href = 'https://give-aus.keela.co/ddonate-a-dollar-to-download';
+        } else {
+          alert('Please select at least one image before checking out.');
+          cartButton.textContent = 'Checkout';
+        }
+      });
+
+      // Add event listener to each image
+      document.querySelectorAll('.column img').forEach(function(img) {
+        img.addEventListener('click', function() {
+          if (!images.includes(img.src)) {
+            images.push(img.src);
+            img.style.opacity = '0.6'; // Provide visual feedback for selected images
+          } else {
+            images.splice(images.indexOf(img.src), 1);
+            img.style.opacity = '1';
+          }
+          cartButton.textContent = `Checkout (${images.length} images selected)`;
+        });
+      });
+
+      // Show file input when Upload Photos button is clicked
+      showUploadBtn.addEventListener('click', function() {
+        if (authorized) {
+          photoUpload.click();
+        } else {
+          const password = prompt("Please enter the upload password:");
+          if (password === UPLOAD_PASSWORD) {
+            authorized = true;
+            alert("You are now authorized to upload photos.");
+            photoUpload.click();
+          } else {
+            alert("You do not have permission to upload photos.");
+          }
+        }
+      });
+
+      // Handle file upload input change
+      photoUpload.addEventListener('change', function(event) {
+        if (authorized) {
+          const files = event.target.files;
+          Array.prototype.forEach.call(files, function(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const imgElement = document.createElement('img');
+              imgElement.src = e.target.result;
+              imgElement.alt = "Uploaded Image";
+              const imgContainer = document.createElement('div');
+              imgContainer.classList.add('column');
+              imgContainer.appendChild(imgElement);
+              imageGrid.appendChild(imgContainer);
+
+              imgElement.addEventListener('click', function() {
+                if (!images.includes(imgElement.src)) {
+                  images.push(imgElement.src);
+                  imgElement.style.opacity = '0.6';
+                } else {
+                  images.splice(images.indexOf(imgElement.src), 1);
+                  imgElement.style.opacity = '1';
+                }
+                cartButton.textContent = `Checkout (${images.length} images selected)`;
+              });
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+      });
+    });
+
+    // Adding fetch polyfill for older browsers
+    (function(self) {
+      'use strict';
+
+      if (self.fetch) {
+        return
+      }
+
+      function normalizeName(name) {
+        if (typeof name !== 'string') {
+          name = name.toString()
+        }
+
+        if (/[^a-z0-9\-#$%&'*+.^_`|~]/i.test(name)) {
+          throw new TypeError('Invalid character in header field name')
+        }
+
+        return name.toLowerCase()
+      }
+
+      function normalizeValue(value) {
+        if (typeof value !== 'string') {
+          value = value.toString()
+        }
+
+        return value
+      }
+
+      function Headers(headers) {
+        this.map = {}
+
+        var self = this
+        if (headers instanceof Headers) {
+          headers.forEach(function(value, name) {
+            self.append(name, value)
+          })
+
+        } else if (headers) {
+          Object.getOwnPropertyNames(headers).forEach(function(name) {
+            self.append(name, headers[name])
+          })
+        }
+      }
+
+      Headers.prototype.append = function(name, value) {
+        name = normalizeName(name)
+        value = normalizeValue(value)
+        var oldValue = this.map[name]
+        this.map[name] = oldValue ? oldValue+','+value : value
+      }
+
+      Headers.prototype['delete'] = function(name) {
+        delete this.map[normalizeName(name)]
+      }
+
+      Headers.prototype.get = function(name) {
+        name = normalizeName(name)
+        return this.has(name) ? this.map[name] : null
+      }
+
+      Headers.prototype.has = function(name) {
+        return this.map.hasOwnProperty(normalizeName(name))
+      }
+
+      Headers.prototype.set = function(name, value) {
+        this.map[normalizeName(name)] = normalizeValue(value)
+      }
+
+      Headers.prototype.forEach = function(callback, thisArg) {
+        for (var name in this.map) {
+          if (this.map.hasOwnProperty(name)) {
+            callback.call(thisArg, this.map[name], name, this)
+          }
+        }
+      }
+
+      function consumed(body) {
+        if (body.bodyUsed) {
+          return Promise.reject(new TypeError('Already read'))
+        }
+        body.bodyUsed = true
+      }
+
+      function fileReaderReady(reader) {
+        return new Promise(function(resolve, reject) {
+          reader.onload = function() {
+            resolve(reader.result)
+          }
+          reader.onerror = function() {
+            reject(reader.error)
+          }
+        })
+      }
+
+      function readBlobAsArrayBuffer(blob) {
+        var reader = new FileReader()
+        reader.readAsArrayBuffer(blob)
+        return fileReaderReady(reader)
+      }
+
+      function readBlobAsText(blob) {
+        var reader = new FileReader()
+        reader.readAsText(blob)
+        return fileReaderReady(reader)
+      }
+
+      function readArrayBufferAsText(buf) {
+        var view = new Uint8Array(buf)
+        var chars = new Array(view.length)
+
+        for (var i = 0; i < view.length; i++) {
+          chars[i] = String.fromCharCode(view[i])
+        }
+        return chars.join('')
+      }
+
+      function bufferClone(buf) {
+        if (buf.slice) {
+          return buf.slice(0)
+        } else {
+          var view = new Uint8Array(buf.byteLength)
+          view.set(new Uint8Array(buf))
+          return view.buffer
+        }
+      }
+
+      function Body() {
+        this.bodyUsed = false
+
+        this._initBody = function(body) {
+          this._bodyInit = body
+          if (!body) {
+            this._bodyText = ''
+          } else if (typeof body === 'string') {
+            this._bodyText = body
+          } else if (self.Blob && Blob.prototype.isPrototypeOf(body)) {
+            this._bodyBlob = body
+          } else if (self.FormData && FormData.prototype.isPrototypeOf(body)) {
+            this._bodyFormData = body
+          } else if (self.ArrayBuffer && ArrayBuffer.prototype.isPrototypeOf(body)) {
+            this._bodyArrayBuffer = bufferClone(body)
+          } else if (body) {
+            throw new Error('unsupported BodyInit type')
+          } else {
+            this._bodyText = body = ''
+              // fallback
+          }
+        }
+
+        if (self.Blob) {
+          this.blob = function() {
+            var rejected = consumed(this)
+            if (rejected) {
+              return rejected
+            }
+
+            if (this._bodyBlob) {
+              return Promise.resolve(this._bodyBlob)
+            } else if (this._bodyArrayBuffer) {
+              return Promise.resolve(new Blob([this._bodyArrayBuffer]))
+            } else {
+              return Promise.resolve(new Blob([this._bodyText]))
+            }
+          }
+
+          this.arrayBuffer = function() {
+            if (this._bodyArrayBuffer) {
+              return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
+            } else {
+              return this.blob().then(readBlobAsArrayBuffer)
+            }
+          }
+
+          this.text = function() {
+            var rejected = consumed(this)
+            if (rejected) {
+              return rejected
+            }
+
+            if (this._bodyBlob) {
+              return readBlobAsText(this._bodyBlob)
+            } else if (this._bodyArrayBuffer) {
+              return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer))
+            } else {
+              return Promise.resolve(this._bodyText)
+            }
+          }
+        } else {
+          this.text = function() {
+            var rejected = consumed(this)
+            return rejected ? rejected : Promise.resolve(this._bodyText)
+          }
+        }
+
+        if (self.FormData) {
+          this.formData = function() {
+            return this.text().then(decode)
+          }
+        }
+
+        this.json = function() {
+          return this.text().then(JSON.parse)
+        }
+
+        return this
+      }
+
+      var methods = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
+
+      function normalizeMethod(method) {
+        var upcased = method.toUpperCase()
+        return (methods.indexOf(upcased) > -1) ? upcased : method
+      }
+
+      function Request(input, options) {
+        options = options || {}
+        var body = options.body
+
+        if (typeof input === 'string') {
+          this.url = input
+        } else if (input && input.url) {
+          this.url = input.url
+        }
+
+        this.credentials = options.credentials || this.credentials || 'omit'
+        this.headers = new Headers(options.headers)
+        this.method = normalizeMethod(options.method || this.method || 'GET')
+        this.mode = options.mode || this.mode || null
+        this.referrer = null
+
+        if ((this.method === 'GET' || this.method === 'HEAD') && body) {
+          throw new TypeError('Body not allowed for GET or HEAD requests')
+        }
+        this._initBody(body)
+      }
+
+      Request.prototype.clone = function() {
+        return new Request(this, { body: this._bodyInit })
+      }
+
+      function decode(body) {
+        var form = new FormData()
+        body.trim().split('&').forEach(function(bytes) {
+          if (bytes) {
+            var split = bytes.split('=')
+            var name = split.shift().replace(/\+/g, ' ')
+            var value = split.join('=').replace(/\+/g, ' ')
+            form.append(decodeURIComponent(name), decodeURIComponent(value))
+          }
+        })
+        return form
+      }
+
+      function parseHeaders(rawHeaders) {
+        var headers = new Headers()
+        rawHeaders.split(/\r?\n/).forEach(function(line) {
+          var parts = line.split(':')
+          var key = parts.shift().trim()
+          if (key) {
+            var value = parts.join(':').trim()
+            headers.append(key, value)
+          }
+        })
+        return headers
+      }
+
+      Body.call(Request.prototype)
+
+      function Response(bodyInit, options) {
+        if (!options) {
+          options = {}
+        }
+        this.type = 'default'
+        this.status = options.status === undefined ? 200 : options.status
+        this.ok = this.status >= 200 && this.status < 300
+        this.statusText = 'statusText' in options ? options.statusText : 'OK'
+        this.headers = new Headers(options.headers)
+        this.url = options.url || ''
+        this._initBody(bodyInit)
+      }
+
+      Body.call(Response.prototype)
+
+      Response.prototype.clone = function() {
+        return new Response(this._bodyInit, {
+          status: this.status,
+          statusText: this.statusText,
+          headers: new Headers(this.headers),
+          url: this.url
+        })
+      }
+
+      Response.error = function() {
+        var response = new Response(null, {status: 0, statusText: ''})
+        response.type = 'error'
+        return response
+      }
+
+      var redirectStatuses = [301, 302, 303, 307, 308]
+
+      Response.redirect = function(url, status) {
+        if (redirectStatuses.indexOf(status) === -1) {
+          throw new RangeError('Invalid status code')
+        }
+
+        return new Response(null, {status: status, headers: {location: url}})
+      }
+
+      self.Headers = Headers
+      self.Request = Request
+      self.Response = Response
+
+      self.fetch = function(input, init) {
+        return new Promise(function(resolve, reject) {
+          var request = new Request(input, init)
+          var xhr = new XMLHttpRequest()
+
+          xhr.onload = function() {
+            var options = {
+              status: xhr.status,
+              statusText: xhr.statusText,
+              headers: parseHeaders(xhr.getAllResponseHeaders() || '')
+            }
+            options.url = 'responseURL' in xhr ? xhr.responseURL : options.headers.get('X-Request-URL')
+            var body = 'response' in xhr ? xhr.response : xhr.responseText
+            resolve(new Response(body, options))
+          }
+
+          xhr.onerror = function() {
+            reject(new TypeError('Network request failed'))
+          }
+
+          xhr.ontimeout = function() {
+            reject(new TypeError('Network request failed'))
+          }
+
+          xhr.open(request.method, request.url, true)
+
+          if (request.credentials === 'include') {
+            xhr.withCredentials = true
+          } else if (request.credentials === 'omit') {
+            xhr.withCredentials = false
+          }
+
+          if ('responseType' in xhr && self.Blob) {
+            xhr.responseType = 'blob'
+          }
+
+          request.headers.forEach(function(value, name) {
+            xhr.setRequestHeader(name, value)
+          })
+
+          xhr.send(typeof request._bodyInit === 'undefined' ? null : request._bodyInit)
+        })
+      }
+      self.fetch.polyfill = true
+    })(typeof self !== 'undefined' ? self : this);
+  </script>
+</body>
+</html>
